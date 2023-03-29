@@ -140,7 +140,7 @@ fn distance_to(a: &str, b: &str, valves: &HashMap<String, Valve>) -> u32
  * Opening a valve takes 1 minute, as does moving from one valve to another.
  * This function returns the maximum pressure that can be released from the system.
  */
-pub fn get_max_pressure(filename: &str) -> u32
+pub fn get_max_pressure(filename: &str, remaining_time: (u32, u32)) -> u32
 {
     let lines = get_lines(filename);
     let mut valves: HashMap<String, Valve> = HashMap::new();
@@ -157,5 +157,5 @@ pub fn get_max_pressure(filename: &str) -> u32
         valves.insert(name, Valve { flow_rate, connections });
     }
 
-    test_all_moves(&valves, (26, 26))
+    test_all_moves(&valves, remaining_time)
 }
