@@ -1,6 +1,11 @@
+use std::time::Instant;
+use cached::instant::now;
+
 mod tasks;
 
 fn main()
 {
-    println!("{}", tasks::p15::get_beacon_location("input/p15.txt", 2000000));
+    let start = now();
+    println!("{}", tasks::p16::get_max_pressure("input/p16.txt"));
+    println!("Time: {}ms", now() - start);
 }
