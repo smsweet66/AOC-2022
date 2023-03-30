@@ -37,7 +37,7 @@ fn get_bounds(lines: &Vec<String>, pattern: &Regex) -> (u32, u32, u32)
     (min_x, max_x, max_y)
 }
 
-fn add_rocks(lines: &Vec<String>, pattern: &Regex, grid: &mut Vec<Vec<Spot>>, min_x: u32, max_x: u32, max_y: u32)
+fn add_rocks(lines: &Vec<String>, pattern: &Regex, grid: &mut Vec<Vec<Spot>>, min_x: u32)
 {
     for line in lines
     {
@@ -96,7 +96,7 @@ pub fn get_num_sand_pieces(filename: &str) -> i32
 
     let (min_x, max_x, max_y) = get_bounds(&lines, &pattern);
     let mut grid = vec![vec![Spot::Empty; (max_x - min_x + 1) as usize]; (max_y + 1) as usize];
-    add_rocks(&lines, &pattern, &mut grid, min_x, max_x, max_y);
+    add_rocks(&lines, &pattern, &mut grid, min_x);
 
     let mut num_sand_pieces = 0;
     'outer: loop
@@ -146,7 +146,7 @@ pub fn get_num_sand_pieces_floored(filename: &str) -> i32
 
     let mut grid = vec![vec![Spot::Empty; (max_x - min_x + 1) as usize]; (max_y + 1) as usize];
 
-    add_rocks(&lines, &pattern, &mut grid, min_x, max_x, max_y);
+    add_rocks(&lines, &pattern, &mut grid, min_x);
     for x in 0..grid[0].len()
     { grid[max_y as usize][x] = Spot::Rock; }
 
