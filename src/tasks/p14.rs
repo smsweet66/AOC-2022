@@ -1,5 +1,6 @@
 use std::cmp::{max, min};
 use std::io::Lines;
+use regex::Regex;
 use crate::tasks::helper::get_lines;
 
 #[derive(Clone, PartialEq)]
@@ -8,6 +9,72 @@ enum Spot
     Sand,
     Rock,
     Empty,
+}
+
+fn get_bounds(lines: &Vec<String>, pattern: &Regex) -> (u32, u32, u32)
+{
+    let mut min_x = u32::MAX;
+    let mut max_x = u32::MIN;
+    let mut max_y = u32::MIN;
+    for line in lines
+    {
+        let coords = pattern.captures_iter(line);
+        for coord in coords
+        {
+            let x: u32 = coord[1].parse().unwrap();
+            let y: u32 = coord[2].parse().unwrap();
+
+            if x < min_x
+            { min_x = x; }
+            else if x > max_x
+            { max_x = x; }
+
+            if y > max_y
+            { max_y = y; }
+        }
+    }
+
+    (min_x, max_x, max_y)
+}
+
+fn add_rocks(lines: &Vec<String>, pattern: &Regex, grid: &mut Vec<Vec<Spot>>, min_x: u32, max_x: u32, max_y: u32)
+{
+    for line in lines
+    {
+        let captures = pattern.captures_iter(line);
+        let mut coords: Vec<(u32, u32)> = Vec::new();
+        for cap in captures
+        { coords.push((cap[1].parse().unwrap(), cap[2].parse().unwrap())); }
+        for i in 0..coords.len()-1
+        {
+            if coords[i].0 == coords[i+1].0
+            {
+                if coords[i].1 < coords[i+1].1
+                {
+                    for y in coords[i].1..=coords[i+1].1
+                    { grid[y as usize][coords[i].0 as usize - min_x as usize] = Spot::Rock; }
+                }
+                else
+                {
+                    for y in coords[i+1].1..=coords[i].1
+                    { grid[y as usize][coords[i].0 as usize - min_x as usize] = Spot::Rock; }
+                }
+            }
+            else if coords[i].1 == coords[i+1].1
+            {
+                if coords[i].0 < coords[i+1].0
+                {
+                    for x in coords[i].0..=coords[i+1].0
+                    { grid[coords[i].1 as usize][x as usize - min_x as usize] = Spot::Rock; }
+                }
+                else
+                {
+                    for x in coords[i+1].0..=coords[i].0
+                    { grid[coords[i].1 as usize][x as usize - min_x as usize] = Spot::Rock; }
+                }
+            }
+        }
+    }
 }
 
 /*
@@ -25,71 +92,11 @@ enum Spot
 pub fn get_num_sand_pieces(filename: &str) -> i32
 {
     let lines = get_lines(filename);
+    let pattern = Regex::new(r"(\d+),(\d+)").unwrap();
 
-    let mut min_x = u32::MAX;
-    let mut max_x = u32::MIN;
-    let mut max_y = u32::MIN;
-    for line in &lines
-    {
-        let coords = line.split(" -> ").collect::<Vec<&str>>();
-        for coord in coords
-        {
-            let x_y = coord.split(",").collect::<Vec<&str>>();
-            let x = x_y[0].parse::<u32>().unwrap();
-            let y = x_y[1].parse::<u32>().unwrap();
-
-            if x < min_x
-            { min_x = x; }
-            else if x > max_x
-            { max_x = x; }
-
-            if y > max_y
-            { max_y = y; }
-        }
-    }
-
+    let (min_x, max_x, max_y) = get_bounds(&lines, &pattern);
     let mut grid = vec![vec![Spot::Empty; (max_x - min_x + 1) as usize]; (max_y + 1) as usize];
-    for line in &lines
-    {
-        let coords = line.split(" -> ").collect::<Vec<&str>>();
-        for i in 0..coords.len() -1
-        {
-            let x_y = coords[i].split(",").collect::<Vec<&str>>();
-            let x = x_y[0].parse::<u32>().unwrap();
-            let y = x_y[1].parse::<u32>().unwrap();
-
-            let x_y = coords[i+1].split(",").collect::<Vec<&str>>();
-            let x2 = x_y[0].parse::<u32>().unwrap();
-            let y2 = x_y[1].parse::<u32>().unwrap();
-
-            if x == x2
-            {
-                if y < y2
-                {
-                    for y in y..=y2
-                    { grid[y as usize][x as usize - min_x as usize] = Spot::Rock; }
-                }
-                else
-                {
-                    for y in y2..=y
-                    { grid[y as usize][x as usize - min_x as usize] = Spot::Rock; }
-                }
-            }
-            else if y == y2
-            {
-                if x < x2
-                {
-                    for x in x..=x2
-                    { grid[y as usize][x as usize - min_x as usize] = Spot::Rock; }
-                }
-                else
-                {
-                    for x in x2..=x
-                    { grid[y as usize][x as usize - min_x as usize] = Spot::Rock; }
-                }
-            }
-        }
-    }
+    add_rocks(&lines, &pattern, &mut grid, min_x, max_x, max_y);
 
     let mut num_sand_pieces = 0;
     'outer: loop
@@ -130,76 +137,16 @@ pub fn get_num_sand_pieces(filename: &str) -> i32
 pub fn get_num_sand_pieces_floored(filename: &str) -> i32
 {
     let lines = get_lines(filename);
-
-    let mut min_x = u32::MAX;
-    let mut max_x = u32::MIN;
-    let mut max_y = u32::MIN;
-    for line in &lines
-    {
-        let coords = line.split(" -> ").collect::<Vec<&str>>();
-        for coord in coords
-        {
-            let x_y = coord.split(",").collect::<Vec<&str>>();
-            let x = x_y[0].parse::<u32>().unwrap();
-            let y = x_y[1].parse::<u32>().unwrap();
-
-            if x < min_x
-            { min_x = x; }
-            else if x > max_x
-            { max_x = x; }
-
-            if y > max_y
-            { max_y = y; }
-        }
-    }
+    let pattern = Regex::new(r"(\d+),(\d+)").unwrap();
+    let (mut min_x, mut max_x, mut max_y) = get_bounds(&lines, &pattern);
 
     max_y += 2;
     min_x = min(min_x, 500 - max_y);
     max_x = max(max_x, 500 + max_y);
 
     let mut grid = vec![vec![Spot::Empty; (max_x - min_x + 1) as usize]; (max_y + 1) as usize];
-    for line in &lines
-    {
-        let coords = line.split(" -> ").collect::<Vec<&str>>();
-        for i in 0..coords.len() -1
-        {
-            let x_y = coords[i].split(",").collect::<Vec<&str>>();
-            let x = x_y[0].parse::<u32>().unwrap();
-            let y = x_y[1].parse::<u32>().unwrap();
 
-            let x_y = coords[i+1].split(",").collect::<Vec<&str>>();
-            let x2 = x_y[0].parse::<u32>().unwrap();
-            let y2 = x_y[1].parse::<u32>().unwrap();
-
-            if x == x2
-            {
-                if y < y2
-                {
-                    for y in y..=y2
-                    { grid[y as usize][x as usize - min_x as usize] = Spot::Rock; }
-                }
-                else
-                {
-                    for y in y2..=y
-                    { grid[y as usize][x as usize - min_x as usize] = Spot::Rock; }
-                }
-            }
-            else if y == y2
-            {
-                if x < x2
-                {
-                    for x in x..=x2
-                    { grid[y as usize][x as usize - min_x as usize] = Spot::Rock; }
-                }
-                else
-                {
-                    for x in x2..=x
-                    { grid[y as usize][x as usize - min_x as usize] = Spot::Rock; }
-                }
-            }
-        }
-    }
-
+    add_rocks(&lines, &pattern, &mut grid, min_x, max_x, max_y);
     for x in 0..grid[0].len()
     { grid[max_y as usize][x] = Spot::Rock; }
 
@@ -232,7 +179,7 @@ pub fn get_num_sand_pieces_floored(filename: &str) -> i32
     // print the grid
     for y in 0..grid.len()
     {
-        for x in 0..grid[0].len()
+        for x in 0..grid[y].len()
         {
             match grid[y][x]
             {
