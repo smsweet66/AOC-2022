@@ -28,7 +28,6 @@ pub fn get_num_sand_pieces(filename: &str) -> i32
 
     let mut min_x = u32::MAX;
     let mut max_x = u32::MIN;
-    let min_y = u32::MIN;
     let mut max_y = u32::MIN;
     for line in &lines
     {
@@ -134,7 +133,6 @@ pub fn get_num_sand_pieces_floored(filename: &str) -> i32
 
     let mut min_x = u32::MAX;
     let mut max_x = u32::MIN;
-    let min_y = u32::MIN;
     let mut max_y = u32::MIN;
     for line in &lines
     {

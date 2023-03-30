@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use cached::proc_macro::cached;
 use cached::SizedCache;
+use regex::Regex;
 use crate::tasks::helper::get_lines;
 
 #[derive(Debug, Clone)]
@@ -140,22 +141,19 @@ fn distance_to(a: &str, b: &str, valves: &HashMap<String, Valve>) -> u32
  * Opening a valve takes 1 minute, as does moving from one valve to another.
  * This function returns the maximum pressure that can be released from the system.
  */
-pub fn get_max_pressure(filename: &str) -> u32
+pub fn get_max_pressure(filename: &str, remaining_time: (u32, u32)) -> u32
 {
     let lines = get_lines(filename);
+    let pattern = Regex::new(r"^Valve ([A-Z]{2}) has flow rate=(\d+); tunnels? leads? to valves? ([A-Z]{2}(?:, [A-Z]{2})*)$").unwrap();
     let mut valves: HashMap<String, Valve> = HashMap::new();
     for line in &lines
     {
-        let new_line = line.replace(";", "").replace(",", "");
-        let mut parts = new_line.split_whitespace().collect::<Vec<&str>>();
-        let name = parts[1].to_string();
-        let flow_rate = parts[4][5..].parse::<u32>().unwrap();
-        let mut connections = Vec::new();
-        for valve in &parts[9..]
-        { connections.push(valve.to_string()); }
-
+        let captures = pattern.captures(line).expect(&*("Invalid input: ".to_string() + line));
+        let name = captures.get(1).unwrap().as_str().to_string();
+        let flow_rate: u32 = captures.get(2).unwrap().as_str().parse().unwrap();
+        let connections: Vec<String> = captures.get(3).unwrap().as_str().split(", ").map(|x| x.to_string()).collect();
         valves.insert(name, Valve { flow_rate, connections });
     }
 
-    test_all_moves(&valves, (26, 26))
+    test_all_moves(&valves, remaining_time)
 }

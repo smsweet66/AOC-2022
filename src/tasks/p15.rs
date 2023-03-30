@@ -1,3 +1,4 @@
+use regex::Regex;
 use crate::tasks::helper::get_lines;
 
 struct Sensor
@@ -16,27 +17,25 @@ struct Sensor
 pub fn get_num_invalid_locations(filename: &str, row: i128) -> usize
 {
     let lines = get_lines(filename);
+    let pattern = Regex::new(r"^Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)$").unwrap();
     let mut sensors: Vec<Sensor> = Vec::new();
     let mut beacons: Vec<(i128, i128)> = Vec::new();
     let mut min_x = i128::MAX;
     let mut max_x = i128::MIN;
     for line in &lines
     {
-        let new_line = line.replace(",", "").replace(":", "");
-        let line_split = new_line.split(" ").collect::<Vec<&str>>();
-        let x = line_split[2][2..].parse::<i128>().unwrap();
-        let y = line_split[3][2..].parse::<i128>().unwrap();
-        let beacon_x = line_split[8][2..].parse::<i128>().unwrap();
-        let beacon_y = line_split[9][2..].parse::<i128>().unwrap();
+        let captures = pattern.captures(line).expect(&*("Invalid input: ".to_string() + line));
+        let sensor_location: (i128, i128) = (captures[1].parse().unwrap(), captures[2].parse().unwrap());
+        let beacon_location: (i128, i128) = (captures[3].parse().unwrap(), captures[4].parse().unwrap());
 
-        let radius = (beacon_x - x).abs() + (beacon_y - y).abs();
-        sensors.push(Sensor { x, y, radius });
-        beacons.push((beacon_x, beacon_y));
+        let radius = (beacon_location.0 - sensor_location.0).abs() + (beacon_location.1 - sensor_location.1).abs();
+        sensors.push(Sensor { x: sensor_location.0, y: sensor_location.1, radius });
+        beacons.push(beacon_location);
 
-        if x - radius < min_x
-        { min_x = x - radius; }
-        if x + radius > max_x
-        { max_x = x + radius; }
+        if sensor_location.0 - radius < min_x
+        { min_x = sensor_location.0 - radius; }
+        if sensor_location.0 + radius > max_x
+        { max_x = sensor_location.0 + radius; }
     }
 
     let mut invalid_locations = 0;
@@ -62,18 +61,16 @@ pub fn get_num_invalid_locations(filename: &str, row: i128) -> usize
 pub fn get_beacon_location(filename: &str, row: i128) -> i128
 {
     let lines = get_lines(filename);
+    let pattern = Regex::new(r"^Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)$").unwrap();
     let mut sensors: Vec<Sensor> = Vec::new();
     for line in &lines
     {
-        let new_line = line.replace(",", "").replace(":", "");
-        let line_split = new_line.split(" ").collect::<Vec<&str>>();
-        let x = line_split[2][2..].parse::<i128>().unwrap();
-        let y = line_split[3][2..].parse::<i128>().unwrap();
-        let beacon_x = line_split[8][2..].parse::<i128>().unwrap();
-        let beacon_y = line_split[9][2..].parse::<i128>().unwrap();
+        let captures = pattern.captures(line).expect(&*("Invalid input: ".to_string() + line));
+        let sensor_location: (i128, i128) = (captures[1].parse().unwrap(), captures[2].parse().unwrap());
+        let beacon_location: (i128, i128) = (captures[3].parse().unwrap(), captures[4].parse().unwrap());
 
-        let radius = (beacon_x - x).abs() + (beacon_y - y).abs();
-        sensors.push(Sensor { x, y, radius });
+        let radius = (beacon_location.0 - sensor_location.0).abs() + (beacon_location.1 - sensor_location.1).abs();
+        sensors.push(Sensor { x: sensor_location.0, y: sensor_location.1, radius });
     }
 
     let mut possible_locations: Vec<(i128, i128)> = Vec::new();

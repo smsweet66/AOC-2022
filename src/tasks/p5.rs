@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use regex::Regex;
 use crate::tasks::helper::get_lines;
 
 fn build_stacks(lines: &Vec<String>) -> (Vec<VecDeque<char>>, usize)
@@ -42,12 +43,13 @@ pub fn top_crate_stacks(filename: &str) -> String
 {
     let lines = get_lines(filename);
     let (mut stacks, command) = build_stacks(&lines);
+    let pattern = Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
     for line in &lines[command..]
     {
-        let command = line.split(' ').collect::<Vec<&str>>();
-        let box_count = command[1].parse::<usize>().unwrap();
-        let from = command[3].parse::<usize>().unwrap();
-        let to = command[5].parse::<usize>().unwrap();
+        let command = pattern.captures(line).unwrap();
+        let box_count: usize = command[1].parse().unwrap();
+        let from: usize = command[2].parse().unwrap();
+        let to: usize = command[3].parse().unwrap();
         for _ in 0..box_count
         {
             let crate_top = stacks[from - 1].pop_back().unwrap();
@@ -73,13 +75,14 @@ pub fn top_crate_stacks_ordered(filename: &str) -> String
 {
     let lines = get_lines(filename);
     let (mut stacks, command) = build_stacks(&lines);
+    let pattern = Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
     let mut temp_stack: Vec<char> = Vec::new();
     for line in &lines[command..]
     {
-        let command = line.split(' ').collect::<Vec<&str>>();
-        let box_count = command[1].parse::<usize>().unwrap();
-        let from = command[3].parse::<usize>().unwrap();
-        let to = command[5].parse::<usize>().unwrap();
+        let command = pattern.captures(line).unwrap();
+        let box_count: usize = command[1].parse().unwrap();
+        let from: usize = command[2].parse().unwrap();
+        let to: usize = command[3].parse().unwrap();
         for _ in 0..box_count
         {
             let crate_top = stacks[from - 1].pop_back().unwrap();
