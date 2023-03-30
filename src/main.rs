@@ -1,3 +1,5 @@
+use cached::instant::now;
+
 mod tasks;
 
 fn main()
