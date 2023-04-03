@@ -5,6 +5,6 @@ mod tasks;
 fn main()
 {
     let start = now();
-    println!("{}", tasks::p14::get_num_sand_pieces_floored("input/p14.txt"));
-    println!("Time: {}ms", now() - start);
+    println!("{}", tasks::p19::get_sum_geodes("input/p19.txt"));
+    println!("Time: {}s", (now() - start)/1000.0);
 }
