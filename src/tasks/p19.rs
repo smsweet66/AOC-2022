@@ -1,4 +1,5 @@
 use std::collections::{HashMap, VecDeque};
+use std::thread::spawn;
 use regex::Regex;
 use crate::tasks::helper::get_lines;
 
@@ -113,15 +114,13 @@ pub fn get_sum_geodes(filename: &str) -> usize
 	for line in &lines
 	{ blueprints.push(Blueprint::from_line(line)); }
 
+	let mut threads = Vec::with_capacity(blueprints.len());
+	for blueprint in blueprints
+	{ threads.push(spawn(move || max_geodes(&blueprint, 24))) }
+
 	let mut sum_quality = 0;
-	for blueprint in &blueprints
-	{
-		let geodes_produced = max_geodes(&blueprint, 24);
-
-		println!("Blueprint {} produces {} geodes", blueprint.id, geodes_produced);
-
-		sum_quality += geodes_produced * blueprint.id;
-	}
+	for (i, thread) in threads.into_iter().enumerate()
+	{ sum_quality += (i + 1) * thread.join().unwrap(); }
 
 	sum_quality
 }
@@ -133,15 +132,13 @@ pub fn get_product_geodes(filename: &str) -> usize
 	for line in &lines[..3]
 	{ blueprints.push(Blueprint::from_line(line)); }
 
+	let mut threads = Vec::with_capacity(blueprints.len());
+	for blueprint in blueprints
+	{ threads.push(spawn(move || max_geodes(&blueprint, 32))) }
+
 	let mut geodes_product = 1;
-	for blueprint in &blueprints
-	{
-		let geodes_produced = max_geodes(&blueprint, 32);
-
-		println!("Blueprint {} produces {} geodes", blueprint.id, geodes_produced);
-
-		geodes_product *= geodes_produced;
-	}
+	for thread in threads
+	{ geodes_product *= thread.join().unwrap(); }
 
 	geodes_product
 }
