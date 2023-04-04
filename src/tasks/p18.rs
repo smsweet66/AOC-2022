@@ -100,8 +100,6 @@ fn is_bounded(cube: &(usize, usize, usize), cubes: &Vec<(usize, usize, usize)>,
 	true
 }
 
-//2102
-
 /// given a file containing the x,y,z coordinates of many 1x1x1 cubes, find the external
 /// surface area of the resulting structure formed by the cubes
 pub fn get_external_surface_area(filename: &str) -> usize

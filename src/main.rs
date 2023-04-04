@@ -5,6 +5,6 @@ mod tasks;
 fn main()
 {
     let start = now();
-    println!("{}", tasks::p20::get_sum_indices_keyed("input/p20.txt"));
+    println!("{}", tasks::p21::get_input_value("input/p21.txt"));
     println!("Time: {}s", (now() - start)/1000.0);
 }
