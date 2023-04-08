@@ -1,6 +1,7 @@
 use regex::Regex;
 use crate::tasks::helper::get_lines;
 
+#[derive(Debug, Clone, Copy)]
 enum Direction
 {
 	Right,
@@ -228,6 +229,92 @@ pub fn get_password(filename: &str) -> usize
 	1000 * (row + 1) + 4 * (col + 1) + facing_num
 }
 
+///hardcoded for the given file input
+fn wrap_cube(row: usize, col: usize, direction: Direction) -> (usize, usize, Direction)
+{
+	let cube_row = row / 50;
+	let cube_col = col / 50;
+	let (new_cube_row, new_cube_col, new_direction) = match (cube_row, cube_col, direction)
+	{
+		(0, 1, Direction::Up) => (3, 0, Direction::Right),
+		(0, 1, Direction::Left) => (2, 0, Direction::Right),
+		(0, 2, Direction::Up) => (3, 0, Direction::Up),
+		(0, 2, Direction::Right) => (2, 1, Direction::Left),
+		(0, 2, Direction::Down) => (1, 1, Direction::Left),
+		(1, 1, Direction::Right) => (0, 2, Direction::Up),
+		(1, 1, Direction::Left) => (2, 0, Direction::Down),
+		(2, 0, Direction::Up) => (1, 1, Direction::Right),
+		(2, 0, Direction::Left) => (0, 1, Direction::Right),
+		(2, 1, Direction::Right) => (0, 2, Direction::Left),
+		(2, 1, Direction::Down) => (3, 0, Direction::Left),
+		(3, 0, Direction::Right) => (2, 1, Direction::Up),
+		(3, 0, Direction::Down) => (0, 2, Direction::Down),
+		(3, 0, Direction::Left) => (0, 1, Direction::Down),
+		_ => panic!("Invalid cube wrap!: {} {} {:?}", row, col, direction),
+	};
+
+	let (row_idx, col_idx) = (row % 50, col % 50);
+
+	let i = match direction
+	{
+		Direction::Left => 49 - row_idx,
+		Direction::Right => row_idx,
+		Direction::Up => col_idx,
+		Direction::Down => 49 - col_idx,
+	};
+
+
+	// find new idxes within the cube
+
+	let new_row = match new_direction
+	{
+		Direction::Left => 49 - i,
+		Direction::Right => i,
+		Direction::Up => 49,
+		Direction::Down => 0,
+	};
+
+	let new_col = match new_direction
+	{
+		Direction::Left => 49,
+		Direction::Right => 0,
+		Direction::Up => i,
+		Direction::Down => 49 - i,
+	};
+
+	(new_cube_row * 50 + new_row, new_cube_col * 50 + new_col, new_direction)
+}
+
+fn draw_map(map: &Vec<Vec<Spot>>, row: usize, col: usize, facing: Direction)
+{
+	for i in 0..map.len()
+	{
+		for j in 0..map[0].len()
+		{
+			if i == row && j == col
+			{
+				match facing
+				{
+					Direction::Right => print!(">"),
+					Direction::Down => print!("v"),
+					Direction::Left => print!("<"),
+					Direction::Up => print!("^"),
+				}
+			}
+			else
+			{
+				match map[i][j]
+				{
+					Spot::Empty => print!("."),
+					Spot::Wall => print!("#"),
+					Spot::Void => print!(" "),
+				}
+			}
+		}
+		println!();
+	}
+}
+
 ///Same as the above function, but the wrapping works differently.
 ///The map is actually split up into six sections, representing the
 ///faces of a cube.  When you hit the void, you wrap around to the
@@ -264,7 +351,137 @@ pub fn get_password_cube(filename: &str) -> usize
 		}
 	}
 
+	for movement in movements
+	{
+		match movement
+		{
+			Movement::Left => {
+				match facing
+				{
+					Direction::Right => facing = Direction::Up,
+					Direction::Down => facing = Direction::Right,
+					Direction::Left => facing = Direction::Down,
+					Direction::Up => facing = Direction::Left,
+				}
+			},
+			Movement::Right => {
+				match facing
+				{
+					Direction::Right => facing = Direction::Down,
+					Direction::Down => facing = Direction::Left,
+					Direction::Left => facing = Direction::Up,
+					Direction::Up => facing = Direction::Right,
+				}
+			},
+			Movement::Forward(distance) => {
+				for _ in 0..distance
+				{
+					match facing
+					{
+						Direction::Right => {
+							match map[row].get(col + 1).unwrap_or(&Spot::Void)
+							{
+								Spot::Empty => col = col + 1,
+								Spot::Wall => {},
+								Spot::Void => {
+									let (new_row, new_col, new_facing) = wrap_cube(row, col, facing);
+									if map[new_row][new_col] == Spot::Empty
+									{
+										row = new_row;
+										col = new_col;
+										facing = new_facing;
+									}
+								},
+							}
+						}
+						Direction::Down => {
+							match map.get(row + 1).unwrap_or(&vec![Spot::Void]).get(col).unwrap_or(&Spot::Void)
+							{
+								Spot::Empty => row = row + 1,
+								Spot::Wall => {},
+								Spot::Void => {
+									let (new_row, new_col, new_facing) = wrap_cube(row, col, facing);
+									if map[new_row][new_col] == Spot::Empty
+									{
+										row = new_row;
+										col = new_col;
+										facing = new_facing;
+									}
+								},
+							}
+						},
+						Direction::Left => {
+							if col == 0
+							{
+								let (new_row, new_col, new_facing) = wrap_cube(row, col, facing);
+								if map[new_row][new_col] == Spot::Empty
+								{
+									row = new_row;
+									col = new_col;
+									facing = new_facing;
+								}
 
+								continue;
+							}
 
-	0
+							match map[row].get(col - 1).unwrap_or(&Spot::Void)
+							{
+								Spot::Empty => col = col - 1,
+								Spot::Wall => {},
+								Spot::Void => {
+									let (new_row, new_col, new_facing) = wrap_cube(row, col, facing);
+									if map[new_row][new_col] == Spot::Empty
+									{
+										row = new_row;
+										col = new_col;
+										facing = new_facing;
+									}
+								},
+							}
+						},
+						Direction::Up => {
+							if row == 0
+							{
+								let (new_row, new_col, new_facing) = wrap_cube(row, col, facing);
+								if map[new_row][new_col] == Spot::Empty
+								{
+									row = new_row;
+									col = new_col;
+									facing = new_facing;
+								}
+
+								continue;
+							}
+
+							match map[row - 1][col]
+							{
+								Spot::Empty => row = row - 1,
+								Spot::Wall => {},
+								Spot::Void => {
+									let (new_row, new_col, new_facing) = wrap_cube(row, col, facing);
+									if map[new_row][new_col] == Spot::Empty
+									{
+										row = new_row;
+										col = new_col;
+										facing = new_facing;
+									}
+								},
+							}
+						},
+					}
+				}
+			}
+		}
+	}
+
+	let mut facing_num = 0;
+	match facing
+	{
+		Direction::Right => facing_num = 0,
+		Direction::Down => facing_num = 1,
+		Direction::Left => facing_num = 2,
+		Direction::Up => facing_num = 3,
+	}
+
+	1000 * (row + 1) + 4 * (col + 1) + facing_num
 }
