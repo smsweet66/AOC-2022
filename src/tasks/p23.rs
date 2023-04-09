@@ -54,7 +54,7 @@ pub fn get_empty_space_count(filename: &str) -> usize
 	for _ in 0..10
 	{
 		//check for surrounding elves
-		for (current_pos, next_pos) in elves.clone().iter_mut()
+		for (current_pos, _) in elves.clone().iter_mut()
 		{
 			let mut has_surrounding = false;
 			'elf: for i in -1..=1
@@ -148,7 +148,7 @@ pub fn get_empty_space_count(filename: &str) -> usize
 		}
 
 		//move elves
-		for (mut current_pos, mut next_pos) in elves.clone().iter_mut()
+		for (current_pos, next_pos) in elves.clone().iter_mut()
 		{
 			if next_pos.is_none() { continue; }
 			elves.remove(current_pos);
@@ -282,7 +282,7 @@ pub fn get_first_empty_round(filename: &str) -> usize
 
 		let mut moved = false;
 		//move elves
-		for (mut current_pos, mut next_pos) in elves.clone().iter_mut()
+		for (current_pos, next_pos) in elves.clone().iter_mut()
 		{
 			if next_pos.is_none() { continue; }
 			elves.remove(current_pos);

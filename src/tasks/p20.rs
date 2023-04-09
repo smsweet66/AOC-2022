@@ -60,7 +60,7 @@ impl CDLList
 	{
 		for node in &self.nodes
 		{
-			let mut node = node.clone();
+			let node = node.clone();
 			let mut value = node.borrow().node_value;
 			//as the list is circular, we can reduce the number of movements by
 			//taking the remainder of the value and the length of the list
@@ -71,9 +71,9 @@ impl CDLList
 				//swap node with the node to the right of it
 				for _ in 0..value
 				{
-					let mut next = node.borrow_mut().next.clone().unwrap();
-					let mut prev = node.borrow_mut().prev.clone().unwrap();
-					let mut next_next = next.borrow_mut().next.clone().unwrap();
+					let next = node.borrow_mut().next.clone().unwrap();
+					let prev = node.borrow_mut().prev.clone().unwrap();
+					let next_next = next.borrow_mut().next.clone().unwrap();
 
 					node.borrow_mut().next = Some(next_next.clone());
 					node.borrow_mut().prev = Some(next.clone());
@@ -90,9 +90,9 @@ impl CDLList
 				//swap node with the node to the left of it
 				for _ in value..0
 				{
-					let mut next = node.borrow_mut().next.clone().unwrap();
-					let mut prev = node.borrow_mut().prev.clone().unwrap();
-					let mut prev_prev = prev.borrow_mut().prev.clone().unwrap();
+					let next = node.borrow_mut().next.clone().unwrap();
+					let prev = node.borrow_mut().prev.clone().unwrap();
+					let prev_prev = prev.borrow_mut().prev.clone().unwrap();
 
 					node.borrow_mut().next = Some(prev.clone());
 					node.borrow_mut().prev = Some(prev_prev.clone());

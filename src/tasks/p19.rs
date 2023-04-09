@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::thread::spawn;
 use regex::Regex;
 use crate::tasks::helper::get_lines;

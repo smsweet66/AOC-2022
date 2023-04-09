@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod helper;
 pub mod p1;
 pub mod p2;

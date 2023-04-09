@@ -21,25 +21,23 @@ impl Monkey<'_>
         {
             self.num_inspections += 1;
             let mut item = self.items.pop_front().unwrap();
-            let mut a = 0;
-            match self.operation[0]
+            let a = match self.operation[0]
             {
-                "old" => a = item,
-                val => a = val.parse::<u64>().expect("Error parsing a"),
-            }
+                "old" => item,
+                val => val.parse::<u64>().expect("Error parsing a"),
+            };
 
-            let mut b = 0;
-            match self.operation[2]
+            let b = match self.operation[2]
             {
-                "old" => b = item,
-                val => b = val.parse::<u64>().expect("Error parsing b"),
-            }
+                "old" => item,
+                val => val.parse::<u64>().expect("Error parsing b"),
+            };
 
             match self.operation[1]
             {
                 "+" => item = (a + b) % test_multiplied,
                 "*" => item = (a * b) % test_multiplied,
-                error => panic!("Unknown operation: {error}"),
+                error => panic!("Unknown operation: {}", error),
             }
 
             if item % self.test == 0

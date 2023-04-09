@@ -54,7 +54,7 @@ impl Folder
     pub fn from_file(filename: &str) -> Rc<RefCell<Folder>>
     {
         let lines = get_lines(filename);
-        let mut root = Rc::new(RefCell::new(Folder::default()));
+        let root = Rc::new(RefCell::new(Folder::default()));
         root.borrow_mut().name = "/".to_string();
         root.borrow_mut().parent = None;
         let mut current = Rc::clone(&root);

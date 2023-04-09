@@ -1,4 +1,3 @@
-use std::mem::swap;
 use crate::tasks::helper::get_lines;
 
 fn get_x_y_distance(segment_a: &(i32, i32), segment_b: &(i32, i32)) -> (i32, i32)

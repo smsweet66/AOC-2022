@@ -110,7 +110,7 @@ pub fn get_greatest_scenic_score(filename: &str) -> u32
             let mut scenic_score = 1;
 
             // get number of trees visible from the left
-            scenic_score *= get_number_of_less_than(current, &lines[i][0..j].chars().rev().collect::<String>());;
+            scenic_score *= get_number_of_less_than(current, &lines[i][0..j].chars().rev().collect::<String>());
 
             // get number of trees visible from the right
             scenic_score *= get_number_of_less_than(current, &lines[i][j+1..]);

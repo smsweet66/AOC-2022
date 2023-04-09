@@ -182,7 +182,7 @@ fn percolate_down(monkey: &str, monkeys: &mut HashMap<String, Task>)
 				_ => panic!("Unknown operation: {}", operation.operation),
 			}
 		},
-		Task::Number(number) => (),
+		Task::Number(_) => (),
 	}
 }
 

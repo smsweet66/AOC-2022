@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use regex::Regex;
 use crate::tasks::helper::get_lines;
 
@@ -121,7 +120,7 @@ pub fn get_external_surface_area(filename: &str) -> usize
 		let mut neighbors: Vec<(usize, usize, usize)> = Vec::new();
 		for i in cubes_len..new_cubes_len
 		{
-			let mut new_neighbors = get_neighbors(&cubes[i], &cubes);
+			let new_neighbors = get_neighbors(&cubes[i], &cubes);
 			for neighbor in &new_neighbors
 			{
 				if !neighbors.contains(neighbor)

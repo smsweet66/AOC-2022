@@ -1,7 +1,5 @@
 use std::fs::File;
-use std::{fs, io};
-use std::io::{BufRead, BufReader, Lines};
-use std::process::exit;
+use std::io::{BufRead, BufReader};
 
 /*
  * Reads a file and returns a vector of strings

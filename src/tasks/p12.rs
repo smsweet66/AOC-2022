@@ -1,6 +1,5 @@
 use std::cmp::Reverse;
 use std::collections::HashMap;
-use std::iter::Map;
 use priority_queue::PriorityQueue;
 use crate::tasks::helper::get_lines;
 
@@ -107,7 +106,7 @@ pub fn get_fewest_steps(filename: &str) -> u32
     let map = get_lines(filename);
     let mut start_positions: Vec<(i32, i32)> = Vec::new();
     let mut final_pos: (i32, i32) = (0, 0);
-    'outer: for i in 0..map.len()
+    for i in 0..map.len()
     {
         for j in 0..map[i].len()
         {

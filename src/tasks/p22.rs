@@ -44,7 +44,7 @@ enum Spot
 fn build_map(filename: &str) -> (Vec<Vec<Spot>>, String)
 {
 	let lines = get_lines(filename);
-	let mut max_width = lines[..lines.len()-2].iter().map(|x| x.len()).max().unwrap();
+	let max_width = lines[..lines.len()-2].iter().map(|x| x.len()).max().unwrap();
 
 	let mut map = Vec::new();
 	for line in lines[..lines.len()-2].iter()
@@ -85,7 +85,7 @@ pub fn get_password(filename: &str) -> usize
 {
 	let (map, moves) = build_map(filename);
 	let pattern = Regex::new(r"(\d+|[RL])").unwrap();
-	let mut movements = get_moves(&moves, &pattern);
+	let movements = get_moves(&moves, &pattern);
 
 	let mut row = 0;
 	let mut col = 0;
@@ -217,16 +217,13 @@ pub fn get_password(filename: &str) -> usize
 		}
 	}
 
-	let mut facing_num = 0;
 	match facing
 	{
-		Direction::Right => facing_num = 0,
-		Direction::Down => facing_num = 1,
-		Direction::Left => facing_num = 2,
-		Direction::Up => facing_num = 3,
+		Direction::Right => 1000 * (row + 1) + 4 * (col + 1),
+		Direction::Down => 1000 * (row + 1) + 4 * (col + 1) + 1,
+		Direction::Left => 1000 * (row + 1) + 4 * (col + 1) + 2,
+		Direction::Up => 1000 * (row + 1) + 4 * (col + 1) + 3,
 	}
-
-	1000 * (row + 1) + 4 * (col + 1) + facing_num
 }
 
 ///hardcoded for the given file input
@@ -336,7 +333,7 @@ pub fn get_password_cube(filename: &str) -> usize
 {
 	let (map, moves) = build_map(filename);
 	let pattern = Regex::new(r"(\d+|[RL])").unwrap();
-	let mut movements = get_moves(&moves, &pattern);
+	let movements = get_moves(&moves, &pattern);
 
 	let mut row = 0;
 	let mut col = 0;
@@ -474,14 +471,11 @@ pub fn get_password_cube(filename: &str) -> usize
 		}
 	}
 
-	let mut facing_num = 0;
 	match facing
 	{
-		Direction::Right => facing_num = 0,
-		Direction::Down => facing_num = 1,
-		Direction::Left => facing_num = 2,
-		Direction::Up => facing_num = 3,
+		Direction::Right => 1000 * (row + 1) + 4 * (col + 1),
+		Direction::Down => 1000 * (row + 1) + 4 * (col + 1) + 1,
+		Direction::Left => 1000 * (row + 1) + 4 * (col + 1) + 2,
+		Direction::Up => 1000 * (row + 1) + 4 * (col + 1) + 3,
 	}
-
-	1000 * (row + 1) + 4 * (col + 1) + facing_num
 }
