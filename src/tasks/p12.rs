@@ -64,10 +64,8 @@ fn path_len(map: &Vec<String>, start_pos: (i32, i32), final_pos: (i32, i32)) -> 
         }
     }
 
-    if !distance_map.contains_key(&final_pos)
-    { return None; }
-    else
-    { return Some(distance_map[&final_pos] as u32); }
+    return if !distance_map.contains_key(&final_pos) { None }
+    else { Some(distance_map[&final_pos] as u32) }
 }
 
 /*

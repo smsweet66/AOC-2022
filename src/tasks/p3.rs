@@ -9,25 +9,22 @@ use crate::tasks::helper;
 pub fn sum_priorities(rucksack_file: &str) -> u32
 {
     let lines = helper::get_lines(rucksack_file);
-    let mut sum: u32 = 0;
-    for line in lines
-    {
+
+    return lines.iter()
+        .map(|line| {
         let compartments = line.split_at(line.len() / 2);
         for item in compartments.0.chars()
         {
             if compartments.1.contains(item)
             {
-                if item.is_lowercase()
-                { sum += item as u32 - 96; }
-                else
-                { sum += item as u32 - 38; }
-
-                break;
+                return if item.is_lowercase() { item as u32 - 96 }
+                else { item as u32 - 38 }
             }
         }
-    }
 
-    return sum;
+        return 0;
+    })
+    .sum();
 }
 
 /*
