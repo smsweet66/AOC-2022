@@ -5,155 +5,122 @@ use regex::Regex;
 use crate::tasks::helper::get_lines;
 
 #[derive(Debug, Clone)]
-struct Valve
-{
-    flow_rate: u32,
-    connections: Vec<String>,
+struct Valve {
+	flow_rate: u32,
+	connections: Vec<String>,
 }
 
-fn get_moves(current_valve: &str, valves: &HashMap<String, Valve>, visited: &mut Vec<String>, remaining_time: u32) -> Vec<String>
-{
-    let mut moves = Vec::new();
-    for (name, valve) in valves
-    {
-        if valve.flow_rate == 0
-        { continue; }
+fn get_moves(current_valve: &str, valves: &HashMap<String, Valve>, visited: &mut Vec<String>, remaining_time: u32) -> Vec<String> {
+	let mut moves = Vec::new();
+	for (name, valve) in valves {
+		if valve.flow_rate == 0 { continue; }
 
-        if visited.contains(&name)
-        { continue; }
+		if visited.contains(&name) { continue; }
 
-        let distance = distance_to(current_valve, name, valves);
-        if distance + 1 <= remaining_time
-        { moves.push(name.clone()); }
-    }
+		let distance = distance_to(current_valve, name, valves);
+		if distance + 1 <= remaining_time { moves.push(name.clone()); }
+	}
 
-    moves
+	moves
 }
 
-/*
- * Recursively checks all moves from the current valve to find the maximum pressure that can be released.
- */
-fn test_all_moves_recursive(current_valve: (&str, &str), valves: &HashMap<String, Valve>, visited: &mut Vec<String>, remaining_time: (u32, u32)) -> u32
-{
-    let mut max_pressure = 0;
-    let my_moves = get_moves(current_valve.0, valves, visited, remaining_time.0);
-    let other_moves = get_moves(current_valve.1, valves, visited, remaining_time.1);
-    for my_move in &my_moves
-    {
-        visited.push(my_move.clone());
-        for other_move in &other_moves
-        {
-            if visited.contains(other_move)
-            { continue; }
+///Recursively checks all moves from the current valve to find the maximum pressure that can be released.
+fn test_all_moves_recursive(current_valve: (&str, &str), valves: &HashMap<String, Valve>, visited: &mut Vec<String>, remaining_time: (u32, u32)) -> u32 {
+	let mut max_pressure = 0;
+	let my_moves = get_moves(current_valve.0, valves, visited, remaining_time.0);
+	let other_moves = get_moves(current_valve.1, valves, visited, remaining_time.1);
+	for my_move in &my_moves {
+		visited.push(my_move.clone());
+		for other_move in &other_moves {
+			if visited.contains(other_move) { continue; }
 
-            visited.push(other_move.clone());
-            let new_remaining_time = (remaining_time.0 - distance_to(current_valve.0, &my_move, valves) - 1,
-                                     remaining_time.1 - distance_to(current_valve.1, other_move, valves) - 1);
-            let pressure = valves[my_move].flow_rate * new_remaining_time.0 + valves[other_move].flow_rate * new_remaining_time.1;
-            let new_pressure = pressure + test_all_moves_recursive((&my_move, other_move), valves, visited, new_remaining_time);
-            if new_pressure > max_pressure
-            { max_pressure = new_pressure; }
-            visited.pop();
-        }
-        visited.pop();
-    }
+			visited.push(other_move.clone());
+			let new_remaining_time = (remaining_time.0 - distance_to(current_valve.0, &my_move, valves) - 1,
+									 remaining_time.1 - distance_to(current_valve.1, other_move, valves) - 1);
+			let pressure = valves[my_move].flow_rate * new_remaining_time.0 + valves[other_move].flow_rate * new_remaining_time.1;
+			let new_pressure = pressure + test_all_moves_recursive((&my_move, other_move), valves, visited, new_remaining_time);
+			if new_pressure > max_pressure { max_pressure = new_pressure; }
+			visited.pop();
+		}
 
-    // if other runs out of moves, but I still have moves, then I can just keep going
-    if other_moves.len() == 0 && my_moves.len() > 0
-    {
-        for my_move in &my_moves
-        {
-            visited.push(my_move.clone());
-            let new_remaining_time = (remaining_time.0 - distance_to(current_valve.0, &my_move, valves) - 1,
-                                     remaining_time.1);
-            let pressure = valves[my_move].flow_rate * new_remaining_time.0;
-            let new_pressure = pressure + test_all_moves_recursive((&my_move, current_valve.1), valves, visited, new_remaining_time);
-            if new_pressure > max_pressure
-            { max_pressure = new_pressure; }
-            visited.pop();
-        }
-    }
-    else if my_moves.len() == 0 && other_moves.len() > 0
-    {
-        for other_move in &other_moves
-        {
-            visited.push(other_move.clone());
-            let new_remaining_time = (remaining_time.0,
-                                     remaining_time.1 - distance_to(current_valve.1, other_move, valves) - 1);
-            let pressure = valves[other_move].flow_rate * new_remaining_time.1;
-            let new_pressure = pressure + test_all_moves_recursive((current_valve.0, other_move), valves, visited, new_remaining_time);
-            if new_pressure > max_pressure
-            { max_pressure = new_pressure; }
-            visited.pop();
-        }
-    }
+		visited.pop();
+	}
 
-    max_pressure
+	// if other runs out of moves, but I still have moves, then I can just keep going
+	if other_moves.len() == 0 && my_moves.len() > 0 {
+		for my_move in &my_moves {
+			visited.push(my_move.clone());
+			let new_remaining_time = (remaining_time.0 - distance_to(current_valve.0, &my_move, valves) - 1,
+									 remaining_time.1);
+			let pressure = valves[my_move].flow_rate * new_remaining_time.0;
+			let new_pressure = pressure + test_all_moves_recursive((&my_move, current_valve.1), valves, visited, new_remaining_time);
+			if new_pressure > max_pressure { max_pressure = new_pressure; }
+			visited.pop();
+		}
+	} else if my_moves.len() == 0 && other_moves.len() > 0 {
+		for other_move in &other_moves {
+			visited.push(other_move.clone());
+			let new_remaining_time = (remaining_time.0,
+									 remaining_time.1 - distance_to(current_valve.1, other_move, valves) - 1);
+			let pressure = valves[other_move].flow_rate * new_remaining_time.1;
+			let new_pressure = pressure + test_all_moves_recursive((current_valve.0, other_move), valves, visited, new_remaining_time);
+			if new_pressure > max_pressure { max_pressure = new_pressure; }
+			visited.pop();
+		}
+	}
+
+	max_pressure
 }
 
-fn test_all_moves(valves: &HashMap<String, Valve>, remaining_time: (u32, u32)) -> u32
-{
-    let mut visited = Vec::new();
-    test_all_moves_recursive(("AA", "AA"), valves, &mut visited, remaining_time)
+fn test_all_moves(valves: &HashMap<String, Valve>, remaining_time: (u32, u32)) -> u32 {
+	let mut visited = Vec::new();
+	test_all_moves_recursive(("AA", "AA"), valves, &mut visited, remaining_time)
 }
 
 
-fn distance_to_recursive(a: &str, b: &str, valves: &HashMap<String, Valve>, visited: &mut Vec<String>) -> u32
-{
-    if valves[a].connections.contains(&b.to_string())
-    { 1 }
-    else
-    {
-        let mut min_distance = u32::MAX;
-        for connection in &valves[a].connections
-        {
-            if visited.contains(connection)
-            { continue; }
+fn distance_to_recursive(a: &str, b: &str, valves: &HashMap<String, Valve>, visited: &mut Vec<String>) -> u32 {
+	if valves[a].connections.contains(&b.to_string()) { 1 }
+	else {
+		let mut min_distance = u32::MAX;
+		for connection in &valves[a].connections {
+			if visited.contains(connection) { continue; }
 
-            visited.push(connection.clone());
-            let distance = distance_to_recursive(connection, b, valves, visited);
-            if distance < min_distance
-            { min_distance = distance; }
-            visited.pop();
-        }
+			visited.push(connection.clone());
+			let distance = distance_to_recursive(connection, b, valves, visited);
+			if distance < min_distance { min_distance = distance; }
+			visited.pop();
+		}
 
-        if min_distance == u32::MAX
-        { u32::MAX }
-        else
-        { min_distance + 1 }
-    }
+		if min_distance == u32::MAX { u32::MAX }
+		else { min_distance + 1 }
+	}
 }
 
 #[cached(
-    type = "SizedCache<String, u32>",
-    create = "{ SizedCache::with_size(1000) }",
-    convert = r#"{a.to_string() + b}"#
+	type = "SizedCache<String, u32>",
+	create = "{ SizedCache::with_size(1000) }",
+	convert = r#"{a.to_string() + b}"#
 )]
-fn distance_to(a: &str, b: &str, valves: &HashMap<String, Valve>) -> u32
-{
-    let mut visited = Vec::new();
-    distance_to_recursive(a, b, valves, &mut visited)
+fn distance_to(a: &str, b: &str, valves: &HashMap<String, Valve>) -> u32 {
+	let mut visited = Vec::new();
+	distance_to_recursive(a, b, valves, &mut visited)
 }
 
-/*
- * The input is a file containing a list of valves, their flow rate if opened (per minute),
- * and valves that you could access from the current valve.
- * Opening a valve takes 1 minute, as does moving from one valve to another.
- * This function returns the maximum pressure that can be released from the system.
- */
-pub fn get_max_pressure(filename: &str, remaining_time: (u32, u32)) -> u32
-{
-    let lines = get_lines(filename);
-    let pattern = Regex::new(r"^Valve ([A-Z]{2}) has flow rate=(\d+); tunnels? leads? to valves? ([A-Z]{2}(?:, [A-Z]{2})*)$").unwrap();
-    let mut valves: HashMap<String, Valve> = HashMap::new();
-    for line in &lines
-    {
-        let captures = pattern.captures(line).expect(&*("Invalid input: ".to_string() + line));
-        let name = captures.get(1).unwrap().as_str().to_string();
-        let flow_rate: u32 = captures.get(2).unwrap().as_str().parse().unwrap();
-        let connections: Vec<String> = captures.get(3).unwrap().as_str().split(", ").map(|x| x.to_string()).collect();
-        valves.insert(name, Valve { flow_rate, connections });
-    }
+///The input is a file containing a list of valves, their flow rate if opened (per minute),
+///and valves that you could access from the current valve.
+///Opening a valve takes 1 minute, as does moving from one valve to another.
+///This function returns the maximum pressure that can be released from the system.
+pub fn get_max_pressure(filename: &str, remaining_time: (u32, u32)) -> u32 {
+	let lines = get_lines(filename);
+	let pattern = Regex::new(r"^Valve ([A-Z]{2}) has flow rate=(\d+); tunnels? leads? to valves? ([A-Z]{2}(?:, [A-Z]{2})*)$").unwrap();
+	let mut valves: HashMap<String, Valve> = HashMap::new();
+	for line in &lines {
+		let captures = pattern.captures(line).expect(&*("Invalid input: ".to_string() + line));
+		let name = captures.get(1).unwrap().as_str().to_string();
+		let flow_rate: u32 = captures.get(2).unwrap().as_str().parse().unwrap();
+		let connections: Vec<String> = captures.get(3).unwrap().as_str().split(", ").map(|x| x.to_string()).collect();
+		valves.insert(name, Valve { flow_rate, connections });
+	}
 
-    test_all_moves(&valves, remaining_time)
+	test_all_moves(&valves, remaining_time)
 }

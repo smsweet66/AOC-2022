@@ -32,32 +32,20 @@ fn update_blizzards(blizzards: &mut Vec<(u32, u32, Direction)>, size: (u32, u32)
 	for blizzard in blizzards.iter_mut() {
 		match blizzard.2 {
 			Direction::Up => {
-				if blizzard.1 > 1 {
-					blizzard.1 -= 1;
-				} else {
-					blizzard.1 = size.1 - 2;
-				}
+				if blizzard.1 > 1 { blizzard.1 -= 1;}
+				else { blizzard.1 = size.1 - 2;}
 			}
 			Direction::Down => {
-				if blizzard.1 < size.1 - 2 {
-					blizzard.1 += 1;
-				} else {
-					blizzard.1 = 1;
-				}
+				if blizzard.1 < size.1 - 2 { blizzard.1 += 1; }
+				else { blizzard.1 = 1;}
 			}
 			Direction::Left => {
-				if blizzard.0 > 1 {
-					blizzard.0 -= 1;
-				} else {
-					blizzard.0 = size.0 - 2;
-				}
+				if blizzard.0 > 1 { blizzard.0 -= 1; }
+				else { blizzard.0 = size.0 - 2; }
 			}
 			Direction::Right => {
-				if blizzard.0 < size.0 - 2 {
-					blizzard.0 += 1;
-				} else {
-					blizzard.0 = 1;
-				}
+				if blizzard.0 < size.0 - 2 { blizzard.0 += 1; }
+				else { blizzard.0 = 1; }
 			}
 		}
 	}
@@ -67,8 +55,7 @@ fn manhattan_distance(a: (u32, u32), b: (u32, u32)) -> u32 {
 	return (a.0 as i32 - b.0 as i32).abs() as u32 + (a.1 as i32 - b.1 as i32).abs() as u32;
 }
 
-fn get_possible_moves(location: (u32, u32), walls: &Vec<(u32, u32)>, blizzards: &Vec<(u32, u32)>, size: (u32, u32)) -> Vec<(u32, u32)>
-{
+fn get_possible_moves(location: (u32, u32), walls: &Vec<(u32, u32)>, blizzards: &Vec<(u32, u32)>, size: (u32, u32)) -> Vec<(u32, u32)> {
 	let mut possible_moves: Vec<(u32, u32)> = Vec::new();
 	if location.0 > 0 && !walls.contains(&(location.0 - 1, location.1)) && !blizzards.contains(&(location.0 - 1, location.1)) {
 		possible_moves.push((location.0 - 1, location.1));
@@ -129,11 +116,8 @@ fn shortest_path(initial_state: State, end: (u32, u32)) -> Option<u32> {
 		}
 	}
 
-	return if current_best == u32::MAX {
-		None
-	} else {
-		Some(current_best)
-	}
+	return if current_best == u32::MAX { None }
+	else { Some(current_best) }
 }
 
 fn print_map(walls: &Vec<(u32, u32)>, blizzards: &Vec<(u32, u32, Direction)>, size: (u32, u32), location: (u32, u32)) {
@@ -155,6 +139,7 @@ fn print_map(walls: &Vec<(u32, u32)>, blizzards: &Vec<(u32, u32, Direction)>, si
 				print!(".");
 			}
 		}
+
 		println!("");
 	}
 }
@@ -219,9 +204,7 @@ pub fn minimum_moves_round_trip(filename: &str) -> u32 {
 
 	let end = (size.0 - 2, size.1 - 1);
 	let path_len = shortest_path(initial_state, end).unwrap();
-	for _ in 0..path_len {
-		update_blizzards(&mut blizzards, size);
-	}
+	for _ in 0..path_len { update_blizzards(&mut blizzards, size); }
 
 	let initial_state = State {
 		walls: walls.clone(),
@@ -233,9 +216,7 @@ pub fn minimum_moves_round_trip(filename: &str) -> u32 {
 
 	let end = (1, 0);
 	let backtrack = shortest_path(initial_state, end).unwrap();
-	for _ in path_len..backtrack {
-		update_blizzards(&mut blizzards, size);
-	}
+	for _ in path_len..backtrack { update_blizzards(&mut blizzards, size); }
 
 	let initial_state = State {
 		walls,

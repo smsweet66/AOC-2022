@@ -1,26 +1,21 @@
 use std::collections::{HashMap, VecDeque};
 use crate::tasks::helper::get_lines;
 
-enum Direction
-{
+enum Direction {
 	North,
 	South,
 	West,
 	East,
 }
 
-fn get_elves(filename: &str) -> HashMap<(i32, i32), Option<(i32, i32)>>
-{
+fn get_elves(filename: &str) -> HashMap<(i32, i32), Option<(i32, i32)>> {
 	let lines = get_lines(filename);
 
 	//hashmap of elf positions and next positions
 	let mut elves: HashMap<(i32, i32), Option<(i32, i32)>> = HashMap::new();
-	for (i, line) in lines.iter().enumerate()
-	{
-		for (j, c) in line.chars().enumerate()
-		{
-			if c == '#'
-			{ elves.insert((j as i32, i as i32), None); }
+	for (i, line) in lines.iter().enumerate() {
+		for (j, c) in line.chars().enumerate() {
+			if c == '#' { elves.insert((j as i32, i as i32), None); }
 		}
 	}
 
@@ -46,24 +41,18 @@ fn get_elves(filename: &str) -> HashMap<(i32, i32), Option<(i32, i32)>>
 ///changed:  The first direction checked is moved to the end of the list.
 ///After ten rounds, this function returns the number of empty spaces in the
 ///smallest bounding box that contains all elves.
-pub fn get_empty_space_count(filename: &str) -> usize
-{
+pub fn get_empty_space_count(filename: &str) -> usize {
 	let mut elves = get_elves(filename);
 	let mut direction_queue = VecDeque::from(vec![Direction::North, Direction::South, Direction::West, Direction::East]);
 
-	for _ in 0..10
-	{
+	for _ in 0..10 {
 		//check for surrounding elves
-		for (current_pos, _) in elves.clone().iter_mut()
-		{
+		for (current_pos, _) in elves.clone().iter_mut() {
 			let mut has_surrounding = false;
-			'elf: for i in -1..=1
-			{
-				for j in -1..=1
-				{
+			'elf: for i in -1..=1 {
+				for j in -1..=1 {
 					if i == 0 && j == 0 { continue; }
-					if elves.contains_key(&(current_pos.0 + i, current_pos.1 + j))
-					{
+					if elves.contains_key(&(current_pos.0 + i, current_pos.1 + j)) {
 						has_surrounding = true;
 						break 'elf;
 					}
@@ -73,15 +62,13 @@ pub fn get_empty_space_count(filename: &str) -> usize
 			if !has_surrounding { continue; }
 
 			//find next position
-			for direction in direction_queue.iter()
-			{
-				match direction
-				{
+			for direction in direction_queue.iter() {
+				match direction {
 					Direction::North => {
 						if !elves.contains_key(&(current_pos.0, current_pos.1 - 1)) &&
 							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 - 1)) &&
-							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 - 1))
-						{
+							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 - 1)) {
+
 							elves.insert(*current_pos, Some((current_pos.0, current_pos.1 - 1)));
 							break;
 						}
@@ -89,8 +76,8 @@ pub fn get_empty_space_count(filename: &str) -> usize
 					Direction::South => {
 						if !elves.contains_key(&(current_pos.0, current_pos.1 + 1)) &&
 							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 + 1)) &&
-							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 + 1))
-						{
+							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 + 1)) {
+
 							elves.insert(*current_pos, Some((current_pos.0, current_pos.1 + 1)));
 							break;
 						}
@@ -98,8 +85,8 @@ pub fn get_empty_space_count(filename: &str) -> usize
 					Direction::West => {
 						if !elves.contains_key(&(current_pos.0 - 1, current_pos.1)) &&
 							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 - 1)) &&
-							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 + 1))
-						{
+							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 + 1)) {
+
 							elves.insert(*current_pos, Some((current_pos.0 - 1, current_pos.1)));
 							break;
 						}
@@ -107,8 +94,8 @@ pub fn get_empty_space_count(filename: &str) -> usize
 					Direction::East => {
 						if !elves.contains_key(&(current_pos.0 + 1, current_pos.1)) &&
 							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 - 1)) &&
-							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 + 1))
-						{
+							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 + 1)) {
+
 							elves.insert(*current_pos, Some((current_pos.0 + 1, current_pos.1)));
 							break;
 						}
@@ -116,27 +103,22 @@ pub fn get_empty_space_count(filename: &str) -> usize
 				}
 			}
 
-			match elves.get(current_pos).unwrap()
-			{
+			match elves.get(current_pos).unwrap() {
 				None => { continue; },
 				_ => {},
 			}
 
 			//check for conflicts
 			let mut conflict = false;
-			for i in -1..=1
-			{
-				for j in -1..=1
-				{
+			for i in -1..=1 {
+				for j in -1..=1 {
 					if i + j == 0 || i + j > 1 || i + j < -1 { continue; }
 					let next_pos = elves[current_pos].unwrap();
 					let position = (next_pos.0 + i, next_pos.1 + j);
 					if position == *current_pos { continue; }
 
-					if elves.contains_key(&position)
-					{
-						if elves[&position] != None && elves[&position].unwrap() == elves[current_pos].unwrap()
-						{
+					if elves.contains_key(&position) {
+						if elves[&position] != None && elves[&position].unwrap() == elves[current_pos].unwrap() {
 							elves.insert(position, None);
 							conflict = true;
 						}
@@ -148,8 +130,7 @@ pub fn get_empty_space_count(filename: &str) -> usize
 		}
 
 		//move elves
-		for (current_pos, next_pos) in elves.clone().iter_mut()
-		{
+		for (current_pos, next_pos) in elves.clone().iter_mut() {
 			if next_pos.is_none() { continue; }
 			elves.remove(current_pos);
 			elves.insert(next_pos.unwrap(), None);
@@ -165,8 +146,7 @@ pub fn get_empty_space_count(filename: &str) -> usize
 	let mut max_x = i32::MIN;
 	let mut min_y = i32::MAX;
 	let mut max_y = i32::MIN;
-	for (x, y) in elves.keys()
-	{
+	for (x, y) in elves.keys() {
 		if *x < min_x { min_x = *x; }
 		if *x > max_x { max_x = *x; }
 		if *y < min_y { min_y = *y; }
@@ -177,26 +157,20 @@ pub fn get_empty_space_count(filename: &str) -> usize
 }
 
 ///Returns the first round in which no elf moves.
-pub fn get_first_empty_round(filename: &str) -> usize
-{
+pub fn get_first_empty_round(filename: &str) -> usize {
 	let mut elves = get_elves(filename);
 	let mut direction_queue = VecDeque::from(vec![Direction::North, Direction::South, Direction::West, Direction::East]);
 
 	let mut round = 1;
 
-	loop
-	{
+	loop {
 		//check for surrounding elves
-		for (current_pos, _) in elves.clone().iter_mut()
-		{
+		for (current_pos, _) in elves.clone().iter_mut() {
 			let mut has_surrounding = false;
-			'elf: for i in -1..=1
-			{
-				for j in -1..=1
-				{
+			'elf: for i in -1..=1 {
+				for j in -1..=1 {
 					if i == 0 && j == 0 { continue; }
-					if elves.contains_key(&(current_pos.0 + i, current_pos.1 + j))
-					{
+					if elves.contains_key(&(current_pos.0 + i, current_pos.1 + j)) {
 						has_surrounding = true;
 						break 'elf;
 					}
@@ -206,15 +180,13 @@ pub fn get_first_empty_round(filename: &str) -> usize
 			if !has_surrounding { continue; }
 
 			//find next position
-			for direction in direction_queue.iter()
-			{
-				match direction
-				{
+			for direction in direction_queue.iter() {
+				match direction {
 					Direction::North => {
 						if !elves.contains_key(&(current_pos.0, current_pos.1 - 1)) &&
 							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 - 1)) &&
-							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 - 1))
-						{
+							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 - 1)) {
+
 							elves.insert(*current_pos, Some((current_pos.0, current_pos.1 - 1)));
 							break;
 						}
@@ -222,8 +194,8 @@ pub fn get_first_empty_round(filename: &str) -> usize
 					Direction::South => {
 						if !elves.contains_key(&(current_pos.0, current_pos.1 + 1)) &&
 							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 + 1)) &&
-							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 + 1))
-						{
+							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 + 1)) {
+
 							elves.insert(*current_pos, Some((current_pos.0, current_pos.1 + 1)));
 							break;
 						}
@@ -231,8 +203,8 @@ pub fn get_first_empty_round(filename: &str) -> usize
 					Direction::West => {
 						if !elves.contains_key(&(current_pos.0 - 1, current_pos.1)) &&
 							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 - 1)) &&
-							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 + 1))
-						{
+							!elves.contains_key(&(current_pos.0 - 1, current_pos.1 + 1)) {
+
 							elves.insert(*current_pos, Some((current_pos.0 - 1, current_pos.1)));
 							break;
 						}
@@ -240,8 +212,8 @@ pub fn get_first_empty_round(filename: &str) -> usize
 					Direction::East => {
 						if !elves.contains_key(&(current_pos.0 + 1, current_pos.1)) &&
 							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 - 1)) &&
-							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 + 1))
-						{
+							!elves.contains_key(&(current_pos.0 + 1, current_pos.1 + 1)) {
+
 							elves.insert(*current_pos, Some((current_pos.0 + 1, current_pos.1)));
 							break;
 						}
@@ -249,27 +221,22 @@ pub fn get_first_empty_round(filename: &str) -> usize
 				}
 			}
 
-			match elves.get(current_pos).unwrap()
-			{
+			match elves.get(current_pos).unwrap() {
 				None => { continue; },
 				_ => {},
 			}
 
 			//check for conflicts (only need to check spots adjacent to the next position)
 			let mut conflict = false;
-			for i in -1..=1
-			{
-				for j in -1..=1
-				{
+			for i in -1..=1 {
+				for j in -1..=1 {
 					if i + j == 0 || i + j > 1 || i + j < -1 { continue; }
 					let next_pos = elves[current_pos].unwrap();
 					let position = (next_pos.0 + i, next_pos.1 + j);
 					if position == *current_pos { continue; }
 
-					if elves.contains_key(&position)
-					{
-						if elves[&position] != None && elves[&position].unwrap() == elves[current_pos].unwrap()
-						{
+					if elves.contains_key(&position) {
+						if elves[&position] != None && elves[&position].unwrap() == elves[current_pos].unwrap() {
 							elves.insert(position, None);
 							conflict = true;
 						}
@@ -282,8 +249,7 @@ pub fn get_first_empty_round(filename: &str) -> usize
 
 		let mut moved = false;
 		//move elves
-		for (current_pos, next_pos) in elves.clone().iter_mut()
-		{
+		for (current_pos, next_pos) in elves.clone().iter_mut() {
 			if next_pos.is_none() { continue; }
 			elves.remove(current_pos);
 			elves.insert(next_pos.unwrap(), None);
